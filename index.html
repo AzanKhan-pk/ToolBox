@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="google-site-verification" content="pFzJuLxvM1rMwB3hcgWcvlF-gUykNb_00YxYb6an-_4" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkBench — Everyday Tools</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14171C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ToolBox">
+  <meta property="og:site_name" content="ToolBox">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "ToolBox",
+  "alternateName": "ToolBox — Everyday Tools",
+  "url": "https://azankhan-pk.github.io/ToolBox/"
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --bg:#14171C;
+    --panel:#1B1F26;
+    --panel-raised:#20252E;
+    --line:#2C323C;
+    --text:#E8E6E1;
+    --muted:#8B9099;
+    --accent:#E8A33D;
+    --accent-ink:#1A1305;
+    --ok:#4FA88A;
+    --err:#D9695F;
+    --radius:10px;
+    --display: 'Archivo', 'Arial Narrow', sans-serif;
+    --body: 'Inter', system-ui, sans-serif;
+  }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--body);}
+  a{color:inherit;}
+  ::selection{background:var(--accent);color:var(--accent-ink);}
+
+  button, input, select, textarea{font-family:inherit;color:inherit;}
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+
+  /* ---- Shell layout ---- */
+  .shell{display:flex; min-height:100vh;}
+  .rail{
+    width:230px; flex-shrink:0; background:var(--panel); border-right:1px solid var(--line);
+    padding:20px 14px; position:sticky; top:0; height:100vh; overflow-y:auto;
+  }
+  .brand{display:flex; align-items:center; gap:9px; padding:4px 8px 20px 8px;}
+  .brand-mark{width:26px;height:26px; background:var(--accent); border-radius:6px; flex-shrink:0;
+    display:flex;align-items:center;justify-content:center; color:var(--accent-ink); font-family:var(--display); font-weight:700; font-size:14px;}
+  .brand-name{font-family:var(--display); font-weight:700; font-size:17px; letter-spacing:-0.01em;}
+
+  .cat-label{font-size:12px; color:var(--muted); padding:14px 8px 6px 8px;}
+  .rail nav button{
+    display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+    background:transparent; border:none; color:var(--text); padding:9px 8px; border-radius:8px;
+    font-size:14px; cursor:pointer;
+  }
+  .rail nav button:hover{background:var(--panel-raised);}
+  .rail nav button.active{background:var(--accent); color:var(--accent-ink); font-weight:600;}
+  .tool-icon{width:18px; text-align:center; font-size:14px; flex-shrink:0;}
+
+  .main{flex:1; min-width:0; padding:34px 40px 60px 40px; max-width:980px;}
+  header.page-head{margin-bottom:28px;}
+  header.page-head h1{font-family:var(--display); font-size:30px; margin:0 0 6px 0; letter-spacing:-0.01em;}
+  header.page-head p{color:var(--muted); margin:0; font-size:15px; max-width:60ch; line-height:1.5;}
+
+  .ad-slot{
+    border:1px dashed var(--line); border-radius:var(--radius); color:var(--muted);
+    font-size:12px; text-align:center; padding:14px; margin:0 0 24px 0;
+  }
+
+  /* ---- Home grid ---- */
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(210px,1fr)); gap:12px;}
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px; cursor:pointer; text-align:left;
+  }
+  .card:hover{border-color:var(--accent);}
+  .card .glyph{font-size:20px; margin-bottom:10px; display:block;}
+  .card h3{font-family:var(--display); font-size:15px; margin:0 0 4px 0; font-weight:600;}
+  .card p{font-size:12.5px; color:var(--muted); margin:0; line-height:1.4;}
+
+  /* ---- Tool panel ---- */
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:24px;}
+  .back-btn{
+    background:none; border:none; color:var(--muted); font-size:13px; cursor:pointer; padding:0;
+    margin-bottom:16px; display:inline-flex; align-items:center; gap:6px;
+  }
+  .back-btn:hover{color:var(--text);}
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px;}
+  .field input[type=text], .field input[type=number], .field input[type=password], .field select, .field textarea{
+    width:100%; background:var(--bg); border:1px solid var(--line); border-radius:7px; padding:9px 11px;
+    font-size:14px;
+  }
+  .field textarea{resize:vertical; min-height:110px; font-family:'SF Mono', Consolas, monospace; font-size:13px;}
+  .row{display:flex; gap:14px; flex-wrap:wrap;}
+  .row .field{flex:1; min-width:160px;}
+  .btn{
+    background:var(--accent); color:var(--accent-ink); border:none; border-radius:7px; padding:10px 18px;
+    font-size:14px; font-weight:600; cursor:pointer;
+  }
+  .btn:hover{filter:brightness(1.08);}
+  .btn.secondary{background:var(--panel-raised); color:var(--text); border:1px solid var(--line);}
+  .btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .out-box{
+    background:var(--bg); border:1px solid var(--line); border-radius:7px; padding:12px;
+    font-family:'SF Mono', Consolas, monospace; font-size:13px; white-space:pre-wrap; word-break:break-word;
+    min-height:44px;
+  }
+  .stat-row{display:flex; gap:24px; flex-wrap:wrap; margin-top:6px;}
+  .stat{background:var(--bg); border:1px solid var(--line); border-radius:7px; padding:10px 16px; min-width:100px;}
+  .stat .n{font-family:var(--display); font-size:20px; font-weight:700;}
+  .stat .l{font-size:11.5px; color:var(--muted); margin-top:2px;}
+  .drop{
+    border:1.5px dashed var(--line); border-radius:var(--radius); padding:34px; text-align:center;
+    color:var(--muted); font-size:13.5px; cursor:pointer;
+  }
+  .drop.drag{border-color:var(--accent); color:var(--text);}
+  .preview-img{max-width:100%; max-height:260px; border-radius:7px; border:1px solid var(--line); display:block; margin-top:12px;}
+  .swatch{width:100%; height:64px; border-radius:7px; border:1px solid var(--line);}
+  .msg{font-size:13px; margin-top:8px;}
+  .msg.ok{color:var(--ok);}
+  .msg.err{color:var(--err);}
+  #qr-canvas-wrap{background:#fff; display:inline-block; padding:14px; border-radius:8px; margin-top:12px;}
+
+
+  .install-app-btn{
+    width:100%; margin-top:14px; background:var(--accent); color:var(--accent-ink);
+    border:none; border-radius:8px; padding:10px 12px; font-size:13px; font-weight:700; cursor:pointer;
+  }
+  .install-app-btn:hover{filter:brightness(1.08);}
+  .install-app-btn[hidden]{display:none !important;}
+
+  @media (max-width:760px){
+    .shell{flex-direction:column;}
+    .rail{width:100%; height:auto; position:relative; display:flex; flex-wrap:wrap; gap:4px; padding:14px;}
+    .rail nav{display:flex; flex-wrap:wrap; gap:6px; width:100%;}
+    .cat-label{display:none;}
+    .main{padding:24px 18px 50px 18px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <aside class="rail">
+    <div class="brand">
+      <div class="brand-mark">W</div>
+      <div class="brand-name">Workbench</div>
+    </div>
+    <nav id="nav"></nav>
+    <button id="installAppBtn" class="install-app-btn" hidden>Install ToolBox</button>
+  </aside>
+
+  <main class="main" id="main">
+    <!-- rendered by JS -->
+  </main>
+</div>
+
+<script>
+/* =========================================================
+   TOOL REGISTRY
+   ========================================================= */
+const TOOLS = [
+  {id:'img-compress', cat:'Image', glyph:'▣', name:'Compress Image', desc:'Shrink JPG/PNG file size by adjusting quality, right in your browser.'},
+  {id:'img-convert', cat:'Image', glyph:'⇄', name:'Convert Image Format', desc:'Switch between PNG, JPG and WebP without uploading anywhere.'},
+  {id:'img-resize', cat:'Image', glyph:'⤢', name:'Resize Image', desc:'Scale an image to exact pixel dimensions or a percentage.'},
+  {id:'qr', cat:'Generate', glyph:'▦', name:'QR Code Generator', desc:'Turn a link or text into a downloadable QR code.'},
+  {id:'password', cat:'Generate', glyph:'⚿', name:'Password Generator', desc:'Create strong random passwords with custom rules.'},
+  {id:'lorem', cat:'Generate', glyph:'¶', name:'Placeholder Text', desc:'Generate paragraphs of filler text for mockups.'},
+  {id:'word-count', cat:'Text', glyph:'≡', name:'Word & Character Counter', desc:'Live counts of words, characters, sentences and reading time.'},
+  {id:'text-case', cat:'Text', glyph:'Aa', name:'Text Case Converter', desc:'Switch text between upper, lower, title and sentence case.'},
+  {id:'diff', cat:'Text', glyph:'≠', name:'Text Compare', desc:'See line-by-line differences between two blocks of text.'},
+  {id:'json', cat:'Developer', glyph:'{}', name:'JSON Formatter', desc:'Validate and pretty-print JSON with clear error messages.'},
+  {id:'base64', cat:'Developer', glyph:'⇌', name:'Base64 Encode / Decode', desc:'Convert text to and from Base64.'},
+  {id:'unit', cat:'Convert', glyph:'⇋', name:'Unit Converter', desc:'Convert length, weight and temperature between common units.'},
+  {id:'color', cat:'Convert', glyph:'◍', name:'Color Converter', desc:'Convert between HEX, RGB and HSL, with a live swatch.'},
+];
+const CATS = [...new Set(TOOLS.map(t=>t.cat))];
+
+let current = null;
+
+/* =========================================================
+   NAV + HOME RENDER
+   ========================================================= */
+function renderNav(){
+  const nav = document.getElementById('nav');
+  nav.innerHTML = '';
+  const homeBtn = document.createElement('button');
+  homeBtn.textContent = '⌂  All tools';
+  homeBtn.className = current===null ? 'active' : '';
+  homeBtn.onclick = () => { current=null; render(); };
+  nav.appendChild(homeBtn);
+
+  CATS.forEach(cat=>{
+    const label = document.createElement('div');
+    label.className = 'cat-label';
+    label.textContent = cat;
+    nav.appendChild(label);
+    TOOLS.filter(t=>t.cat===cat).forEach(t=>{
+      const b = document.createElement('button');
+      b.innerHTML = `<span class="tool-icon">${t.glyph}</span> ${t.name}`;
+      b.className = current===t.id ? 'active' : '';
+      b.onclick = () => { current=t.id; render(); };
+      nav.appendChild(b);
+    });
+  });
+}
+
+function renderHome(){
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <header class="page-head">
+      <h1>Everyday tools, kept on your machine</h1>
+      <p>Thirteen small tools for images, text and quick conversions. Everything runs locally in this page — files and text never leave your device.</p>
+    </header>
+    <div class="ad-slot">Ad space — 728×90</div>
+    <div class="grid" id="grid"></div>
+  `;
+  const grid = document.getElementById('grid');
+  TOOLS.forEach(t=>{
+    const c = document.createElement('button');
+    c.className = 'card';
+    c.innerHTML = `<span class="glyph">${t.glyph}</span><h3>${t.name}</h3><p>${t.desc}</p>`;
+    c.onclick = () => { current=t.id; render(); };
+    grid.appendChild(c);
+  });
+}
+
+function toolShell(title, desc, bodyHTML){
+  return `
+    <button class="back-btn" onclick="goHome()">← All tools</button>
+    <header class="page-head">
+      <h1>${title}</h1>
+      <p>${desc}</p>
+    </header>
+    <div class="panel">${bodyHTML}</div>
+    <div class="ad-slot" style="margin-top:20px;">Ad space — 300×100</div>
+  `;
+}
+function goHome(){ current=null; render(); }
+
+function render(){
+  renderNav();
+  const main = document.getElementById('main');
+  if(current===null){ renderHome(); return; }
+  const t = TOOLS.find(x=>x.id===current);
+  main.innerHTML = toolShell(t.name, t.desc, '<div id="tool-body"></div>');
+  RENDERERS[current]();
+}
+
+/* =========================================================
+   RENDERERS — one per tool
+   ========================================================= */
+const RENDERERS = {};
+
+/* ---- Image compress ---- */
+RENDERERS['img-compress'] = function(){
+  const body = document.getElementById('tool-body');
+  body.innerHTML = `
+    <div class="drop" id="drop1">Click to choose an image, or drag one here (JPG / PNG)</div>
+    <input type="file" id="file1" accept="image/*" style="display:none;">
+    <div class="field" style="margin-top:18px;">
+      <label>Quality: <span id="qval">70</span>%</label>
+      <input type="range" id="quality" min="10" max="95" value="70" style="width:100%;">
+    </div>
+    <img id="prev1" class="preview-img" style="display:none;">
+    <div class="stat-row" id="stats1" style="display:none;">
+      <div class="stat"><div class="n" id="origSize">-</div><div class="l">Original</div></div>
+      <div class="stat"><div class="n" id="newSize">-</div><div class="l">Compressed</div></div>
+      <div class="stat"><div class="n" id="saved">-</div><div class="l">Saved</div></div>
+    </div>
+    <div style="margin-top:16px;">
+      <button class="btn" id="dl1" disabled>Download compressed image</button>
+    </div>
+  `;
+  let img = new Image(), origBytes = 0, canvas = document.createElement('canvas');
+  const fileInput = document.getElementById('file1');
+  const drop = document.getElementById('drop1');
+  drop.onclick = ()=>fileInput.click();
+  ['dragover','dragleave','drop'].forEach(evt=>{
+    drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.toggle('drag', evt==='dragover'); });
+  });
+  drop.addEventListener('drop', e=>{ if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+  fileInput.onchange = e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); };
+
+  function loadFile(f){
+    origBytes = f.size;
+    const reader = new FileReader();
+    reader.onload = e=>{
+      img = new Image();
+      img.onload = ()=>{
+        document.getElementById('prev1').src = img.src;
+        document.getElementById('prev1').style.display='block';
+        document.getElementById('origSize').textContent = fmtBytes(origBytes);
+        document.getElementById('stats1').style.display='flex';
+        compress();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(f);
+  }
+  document.getElementById('quality').oninput = e=>{
+    document.getElementById('qval').textContent = e.target.value;
+    if(img.src) compress();
+  };
+  function compress(){
+    canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+    canvas.getContext('2d').drawImage(img,0,0);
+    const q = document.getElementById('quality').value/100;
+    canvas.toBlob(blob=>{
+      document.getElementById('newSize').textContent = fmtBytes(blob.size);
+      const savedPct = origBytes>0 ? Math.max(0, Math.round((1-blob.size/origBytes)*100)) : 0;
+      document.getElementById('saved').textContent = savedPct+'%';
+      const dlBtn = document.getElementById('dl1');
+      dlBtn.disabled = false;
+      dlBtn.onclick = ()=>downloadBlob(blob, 'compressed.jpg');
+    }, 'image/jpeg', q);
+  }
+};
+
+/* ---- Image convert ---- */
+RENDERERS['img-convert'] = function(){
+  const body = document.getElementById('tool-body');
+  body.innerHTML = `
+    <div class="drop" id="drop2">Click to choose an image, or drag one here</div>
+    <input type="file" id="file2" accept="image/*" style="display:none;">
+    <div class="field" style="margin-top:18px;">
+      <label>Convert to</label>
+      <select id="fmt2">
+        <option value="image/png">PNG</option>
+        <option value="image/jpeg">JPG</option>
+        <option value="image/webp">WebP</option>
+      </select>
+    </div>
+    <img id="prev2" class="preview-img" style="display:none;">
+    <div style="margin-top:16px;"><button class="btn" id="dl2" disabled>Download converted image</button></div>
+  `;
+  let img = new Image();
+  const drop = document.getElementById('drop2'), fileInput = document.getElementById('file2');
+  drop.onclick = ()=>fileInput.click();
+  ['dragover','dragleave','drop'].forEach(evt=>{
+    drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.toggle('drag', evt==='dragover'); });
+  });
+  drop.addEventListener('drop', e=>{ if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+  fileInput.onchange = e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); };
+  function loadFile(f){
+    const reader = new FileReader();
+    reader.onload = e=>{
+      img = new Image();
+      img.onload = ()=>{
+        document.getElementById('prev2').src = img.src;
+        document.getElementById('prev2').style.display='block';
+        convert();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(f);
+  }
+  document.getElementById('fmt2').onchange = ()=>{ if(img.src) convert(); };
+  function convert(){
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext('2d');
+    const fmt = document.getElementById('fmt2').value;
+    if(fmt==='image/jpeg'){ ctx.fillStyle='#fff'; ctx.fillRect(0,0,canvas.width,canvas.height); }
+    ctx.drawImage(img,0,0);
+    canvas.toBlob(blob=>{
+      const ext = fmt.split('/')[1];
+      const dlBtn = document.getElementById('dl2');
+      dlBtn.disabled = false;
+      dlBtn.onclick = ()=>downloadBlob(blob, 'converted.'+ext);
+    }, fmt, 0.92);
+  }
+};
+
+/* ---- Image resize ---- */
+RENDERERS['img-resize'] = function(){
+  const body = document.getElementById('tool-body');
+  body.innerHTML = `
+    <div class="drop" id="drop3">Click to choose an image, or drag one here</div>
+    <input type="file" id="file3" accept="image/*" style="display:none;">
+    <div class="row" style="margin-top:18px;">
+      <div class="field"><label>Width (px)</label><input type="number" id="w3"></div>
+      <div class="field"><label>Height (px)</label><input type="number" id="h3"></div>
+    </div>
+    <div class="field"><label><input type="checkbox" id="lock3" checked style="width:auto; margin-right:6px;">Lock aspect ratio</label></div>
+    <img id="prev3" class="preview-img" style="display:none;">
+    <div style="margin-top:16px;"><button class="btn" id="dl3" disabled>Download resized image</button></div>
+  `;
+  let img = new Image(), ratio = 1;
+  const drop = document.getElementById('drop3'), fileInput = document.getElementById('file3');
+  drop.onclick = ()=>fileInput.click();
+  ['dragover','dragleave','drop'].forEach(evt=>{
+    drop.addEventListener(evt, e=>{ e.preventDefault(); drop.classList.toggle('drag', evt==='dragover'); });
+  });
+  drop.addEventListener('drop', e=>{ if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+  fileInput.onchange = e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); };
+  function loadFile(f){
+    const reader = new FileReader();
+    reader.onload = e=>{
+      img = new Image();
+      img.onload = ()=>{
+        ratio = img.naturalWidth/img.naturalHeight;
+        document.getElementById('w3').value = img.naturalWidth;
+        document.getElementById('h3').value = img.naturalHeight;
+        document.getElementById('prev3').src = img.src;
+        document.getElementById('prev3').style.display='block';
+        document.getElementById('dl3').disabled = false;
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(f);
+  }
+  document.getElementById('w3').oninput = e=>{
+    if(document.getElementById('lock3').checked && ratio){
+      document.getElementById('h3').value = Math.round(e.target.value/ratio);
+    }
+  };
+  document.getElementById('h3').oninput = e=>{
+    if(document.getElementById('lock3').checked && ratio){
+      document.getElementById('w3').value = Math.round(e.target.value*ratio);
+    }
+  };
+  document.getElementById('dl3').onclick = ()=>{
+    const w = parseInt(document.getElementById('w3').value), h = parseInt(document.getElementById('h3').value);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img,0,0,w,h);
+    canvas.toBlob(blob=>downloadBlob(blob, 'resized.png'), 'image/png');
+  };
+};
+
+/* ---- QR generator ---- */
+RENDERERS['qr'] = function(){
+  const body = document.getElementById('tool-body');
+  body.innerHTML = `
+    <div class="field"><label>Text or URL</label><input type="text" id="qrText" placeholder="https://example.com"></div>
+    <div class="row">
+      <div class="field"><label>Size (px)</label><input type="number" id="qrSize" value="240"></div>
+    </div>
+    <button class="btn" id="qrGen">Generate QR code</button>
+    <div id="qr-canvas-wrap" style="display:none;"><div id="qr-target"></div></div>
+    <div style="margin-top:14px;"><button class="btn secondary" id="qrDl" style="display:none;">Download PNG</button></div>
+  `;
+  document.getElementById('qrGen').onclick = ()=>{
+    const text = document.getElementById('qrText').value.trim();
+    if(!text) return;
+    const size = parseInt(document.getElementById('qrSize').value) || 240;
+    const target = document.getElementById('qr-target');
+    target.innerHTML = '';
+    new QRCode(target, { text, width:size, height:size, correctLevel: QRCode.CorrectLevel.M });
+    document.getElementById('qr-canvas-wrap').style.display='inline-block';
+    const dl = document.getElementById('qrDl');
+    dl.style.display='inline-block';
+    dl.onclick = ()=>{
+      setTimeout(()=>{
+        const img = target.querySelector('img') || target.querySelector('canvas');
+        const link = document.createElement('a');
+        link.download = 'qrcode.png';
+        link.href = img.tagName==='CANVAS' ? img.toDataURL() : img.src;
+        link.click();
+      }, 100);
+    };
+  };
+};
+
+/* ---- Password generator ---- */
+RENDERERS['password'] = function(){
+  const body = document.getElementById('tool-body');
+  body.innerHTML = `
+    <div class="field"><label>Length: <span id="plenVal">16</span></label><input type="range" id="plen" min="6" max="48" value="16" style="width:100%;"></div>
+    <div class="row">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox" id="pUpper" checked style="width:auto;">Uppercase</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox" id="pNum" checked style="width:auto;">Numbers</label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;"><input type="checkbox" id="pSym" checked style="width:auto;">Symbols</label>
+    </div>
+    <button class="btn" id="pGen" style="margin-top:16px;">Generate password</button>
+    <div class="out-box" id="pOut" style="margin-top:14px;">—</div>
+    <button class="btn secondary" id="pCopy" style="margin-top:10px;">Copy</button>
+  `;
+  document.getElementById('plen').oninput = e=>document.getElementById('plenVal').textContent = e.target.value;
+  function gen(){
+    const len = parseInt(document.getElementById('plen').value);
+    let chars = 'abcdefghijklmnopqrstuvwxyz';
+    if(document.getElementById('pUpper').checked) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    if(document.getElementById('pNum').checked) chars += '0123456789';
+    if(document.getElementById('pSym').checked) chars += '!@#$%^&*()_-+=?';
+    const arr = new Uint32Array(len);
+    crypto.getRandomValues(arr);
+    let out = '';
+    for(let i=0;i<len;i++) out += chars[arr[i]%chars.length];
+    document.getElementById('pOut').textContent = out;
+  }
+  document.getElementById('pGen').onclick = gen;
+  document.getElementById('pCopy').onclick = ()=>{
+    const txt = document.getElementById('pOut').textContent;
+    if(txt && txt!=='—') navigator.clipboard.writeText(txt);
+  };
+  gen();
+};
+
+/* ---- Lorem ipsum ---- */
+RENDERERS['lorem'] = function(){
+  const body = document.getElementById('tool-body');
+  body.innerHTML = `
+    <div class="field"><label>Paragraphs: <span id="lparaVal">3</span></label><input type="range" id="lpara" min="1" max="10" value="3" style="width:100%;"></div>
+    <button class="btn" id="lGen">Generate text</button>
+    <div class="out-box" id="lOut" style="margin-top:14px; white-space:pre-line;">—</div>
+    <button class="btn secondary" id="lCopy" style="margin-top:10px;">Copy</button>
+  `;
+  const words = "consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua enim ad minim veniam quis nostrud exercitation ullamco laboris nisi aliquip ex ea commodo consequat duis aute irure in reprehenderit voluptate velit esse cillum eu fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt culpa qui officia deserunt mollit anim id est laborum".split(' ');
+  function makeSentence(){
+    const n = 6 + Math.floor(Math.random()*10);
+    let s = [];
+    for(let i=0;i<n;i++) s.push(words[Math.floor(Math.random()*words.length)]);
+    let sentence = s.join(' ');
+    return sentence.charAt(0).toUpperCase()+sentence.slice(1)+'.';
+  }
+  function makeParagraph(){
+    const n = 3 + Math.floor(Math.random()*4);
+    let p = ['Lorem ipsum dolor sit amet.'];
+    for(let i=0;i<n;i++) p.push(makeSentence());
+    return p.join(' ');
+  }
+  document.getElementById('lpara').oninput = e=>document.getElementById('lparaVal').textContent = e.target.value;
+  function gen(){
+    const n = parseInt(document.getElementById('lpara').value);
+    let out = [];
+    for(let i=0;i<n;i++) out.push(makeParagraph());
+    document.getElementById('lOut').textContent = out.join('\n\n');
+  }
+  document.getElementById('lGen').onclick = gen;
+  document.getElementById('lCopy').onclick = ()=>{
+    navigator.clipboard.writeText(document.getElementById('lOut').textContent);
+  };
+  gen();
+};
+
+/* ---- Word counter ---- */
+RENDERERS['word-count'] = function(){
+  const body = document.getElementById('tool-body');
+  body.innerHTML = `
+    <div class="field"><label>Paste or type text</label><textarea id="wcInput" placeholder="Start typing…"></textarea></div>
+    <div class="stat-row">
+      <div class="stat"><div class="n" id="wcWords">0</div><div class="l">Words</div></div>
+      <div class="stat"><div class="n" id="wcChars">0</div><div class="l">Characters</div></div>
+      <div class="stat"><div class="n" id="wcSent">0</div><div class="l">Sentences</div></div>
+      <div class="stat"><div class="n" id="wcRead">0 min</div><div class="l">Reading time</div></div>
+    </div>
+  `;
+  document.getElementById('wcInput').oninput = e=>{
+    const text = e.target.value;
+    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+    const chars = text.length;
+    const sentences = (text.match(/[.!?]+/g)||[]).length;
+    const mins = Math.max(1, Math.ceil(words/200));
+    document.getElementById('wcWords').textContent = words;
+    document.getElementById('wcChars').textContent = chars;
+    document.getElementById('wcSent').textContent = sentences;
+    document.getElementById('wcRead').textContent = words ? mins+' min' : '0 min';
+  };
+};
+
+/* ---- Case converter ---- */
+RENDERERS['text-case'] = function(){
+  const body = document.getElementById('tool-body');
+  body.innerHTML = `
+    <div class="field"><label>Text</label><textarea id="tcInput" placeholder="Type or paste text…"></textarea></div>
+    <div class="row">
+      <button class="btn secondary" data-c="upper">UPPERCASE</button>
+      <button class="btn secondary" data-c="lower">lowercase</button>
+      <button class="btn secondary" data-c="title">Title Case</button>
+      <button class="btn secondary" data-c="sentence">Sentence case</button>
+    </div>
+    <div class="field" style="margin-top:16px;"><label>Result</label><div class="out-box" id="tcOut">—</div></div>
+    <button class="btn" id="tcCopy">Copy result</button>
+  `;
+  document.querySelectorAll('[data-c]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const text = document.getElementById('tcInput').value;
+      let out = text;
+      if(btn.dataset.c==='upper') out = text.toUpperCase();
+      else if(btn.dataset.c==='lower') out = text.toLowerCase();
+      else if(btn.dataset.c==='title') out = text.replace(/\w\S*/g, w=>w[0].toUpperCase()+w.slice(1).toLowerCase());
+      else if(btn.dataset.c==='sentence') out = text.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, c=>c.toUpperCase());
+      document.getElementById('tcOut').textContent = out || '—';
+    };
+  });
+  document.getElementById('tcCopy').onclick = ()=>{
+    const txt = document.getElementById('tcOut').textContent;
+    if(txt && txt!=='—') navigator.clipboard.writeText(txt);
+  };
+};
+
+/* ---- Text diff ---- */
+RENDERERS['diff'] = function(){
+  const body = document.getElementById('tool-body');
+  body.innerHTML = `
+    <div class="row">
+      <div class="field"><label>Original</label><textarea id="diffA"></textarea></div>
+      <div class="field"><label>Changed</label><textarea id="diffB"></textarea></div>
+    </div>
+    <button class="btn" id="diffGo">Compare</button>
+    <div class="out-box" id="diffOut" style="margin-top:14px;">—</div>
+  `;
+  document.getElementById('diffGo').onclick = ()=>{
+    const a = document.getElementById('diffA').value.split('\n');
+    const b = document.getElementById('diffB').value.split('\n');
+    const max = Math.max(a.length, b.length);
+    let lines = [];
+    for(let i=0;i<max;i++){
+      const la = a[i] ?? '', lb = b[i] ?? '';
+      if(la===lb) lines.push('  '+la);
+      else{
+        if(la) lines.push('- '+la);
+        if(lb) lines.push('+ '+lb);
+      }
+    }
+    document.getElementById('diffOut').textContent = lines.join('\n') || '—';
+  };
+};
+
+/* ---- JSON formatter ---- */
+RENDERERS['json'] = function(){
+  const body = document.getElementById('tool-body');
+  body.innerHTML = `
+    <div class="field"><label>Paste JSON</label><textarea id="jsonIn" placeholder='{"key":"value"}'></textarea></div>
+    <button class="btn" id="jsonGo">Format & validate</button>
+    <div class="msg" id="jsonMsg"></div>
+    <div class="field" style="margin-top:14px;"><label>Result</label><div class="out-box" id="jsonOut">—</div></div>
+  `;
+  document.getElementById('jsonGo').onclick = ()=>{
+    const raw = document.getElementById('jsonIn').value;
+    const msg = document.getElementById('jsonMsg');
+    try{
+      const parsed = JSON.parse(raw);
+      document.getElementById('jsonOut').textContent = JSON.stringify(parsed, null, 2);
+      msg.textContent = 'Valid JSON.'; msg.className = 'msg ok';
+    }catch(err){
+      document.getElementById('jsonOut').textContent = '—';
+      msg.textContent = 'Invalid JSON — ' + err.message; msg.className = 'msg err';
+    }
+  };
+};
+
+/* ---- Base64 ---- */
+RENDERERS['base64'] = function(){
+  const body = document.getElementById('tool-body');
+  body.innerHTML = `
+    <div class="field"><label>Input</label><textarea id="b64In"></textarea></div>
+    <div class="row">
+      <button class="btn" id="b64Enc">Encode →</button>
+      <button class="btn secondary" id="b64Dec">← Decode</button>
+    </div>
+    <div class="field" style="margin-top:14px;"><label>Output</label><div class="out-box" id="b64Out">—</div></div>
+    <div class="msg err" id="b64Msg"></div>
+  `;
+  document.getElementById('b64Enc').onclick = ()=>{
+    document.getElementById('b64Msg').textContent = '';
+    try{ document.getElementById('b64Out').textContent = btoa(unescape(encodeURIComponent(document.getElementById('b64In').value))); }
+    catch(e){ document.getElementById('b64Msg').textContent = 'Could not encode this input.'; }
+  };
+  document.getElementById('b64Dec').onclick = ()=>{
+    document.getElementById('b64Msg').textContent = '';
+    try{ document.getElementById('b64Out').textContent = decodeURIComponent(escape(atob(document.getElementById('b64In').value.trim()))); }
+    catch(e){ document.getElementById('b64Msg').textContent = 'This does not look like valid Base64.'; }
+  };
+};
+
+/* ---- Unit converter ---- */
+RENDERERS['unit'] = function(){
+  const body = document.getElementById('tool-body');
+  body.innerHTML = `
+    <div class="field"><label>Category</label>
+      <select id="uCat">
+        <option value="length">Length</option>
+        <option value="weight">Weight</option>
+        <option value="temp">Temperature</option>
+      </select>
+    </div>
+    <div class="row">
+      <div class="field"><label>From</label><input type="number" id="uVal" value="1"><select id="uFrom" style="margin-top:8px;"></select></div>
+      <div class="field"><label>To</label><div class="out-box" id="uOut">—</div><select id="uTo" style="margin-top:8px;"></select></div>
+    </div>
+  `;
+  const UNITS = {
+    length: {m:1, km:1000, cm:0.01, mm:0.001, mile:1609.34, yard:0.9144, foot:0.3048, inch:0.0254},
+    weight: {kg:1, g:0.001, mg:0.000001, lb:0.453592, oz:0.0283495, ton:1000},
+  };
+  function fillSelects(){
+    const cat = document.getElementById('uCat').value;
+    const from = document.getElementById('uFrom'), to = document.getElementById('uTo');
+    from.innerHTML = ''; to.innerHTML = '';
+    if(cat==='temp'){
+      ['Celsius','Fahrenheit','Kelvin'].forEach(u=>{
+        from.innerHTML += `<option value="${u}">${u}</option>`;
+        to.innerHTML += `<option value="${u}">${u}</option>`;
+      });
+      to.value = 'Fahrenheit';
+    } else {
+      Object.keys(UNITS[cat]).forEach(u=>{
+        from.innerHTML += `<option value="${u}">${u}</option>`;
+        to.innerHTML += `<option value="${u}">${u}</option>`;
+      });
+      to.selectedIndex = 1;
+    }
+    convert();
+  }
+  function tempConvert(v, from, to){
+    let c;
+    if(from==='Celsius') c = v;
+    else if(from==='Fahrenheit') c = (v-32)*5/9;
+    else c = v-273.15;
+    if(to==='Celsius') return c;
+    if(to==='Fahrenheit') return c*9/5+32;
+    return c+273.15;
+  }
+  function convert(){
+    const cat = document.getElementById('uCat').value;
+    const v = parseFloat(document.getElementById('uVal').value) || 0;
+    const from = document.getElementById('uFrom').value, to = document.getElementById('uTo').value;
+    let result;
+    if(cat==='temp') result = tempConvert(v, from, to);
+    else result = v * UNITS[cat][from] / UNITS[cat][to];
+    document.getElementById('uOut').textContent = (Math.round(result*10000)/10000).toString();
+  }
+  document.getElementById('uCat').onchange = fillSelects;
+  document.getElementById('uVal').oninput = convert;
+  document.getElementById('uFrom').onchange = convert;
+  document.getElementById('uTo').onchange = convert;
+  fillSelects();
+};
+
+/* ---- Color converter ---- */
+RENDERERS['color'] = function(){
+  const body = document.getElementById('tool-body');
+  body.innerHTML = `
+    <div class="field"><label>Pick a color</label><input type="color" id="cPick" value="#e8a33d" style="width:100%; height:44px; background:none; border:1px solid var(--line); border-radius:7px;"></div>
+    <div class="field"><label>HEX</label><input type="text" id="cHex" value="#E8A33D"></div>
+    <div class="field"><label>RGB</label><div class="out-box" id="cRgb">—</div></div>
+    <div class="field"><label>HSL</label><div class="out-box" id="cHsl">—</div></div>
+    <div class="swatch" id="cSwatch"></div>
+  `;
+  function hexToRgb(hex){
+    hex = hex.replace('#','');
+    if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+    const num = parseInt(hex,16);
+    return [num>>16 & 255, num>>8 & 255, num & 255];
+  }
+  function rgbToHsl(r,g,b){
+    r/=255; g/=255; b/=255;
+    const max=Math.max(r,g,b), min=Math.min(r,g,b);
+    let h,s,l=(max+min)/2;
+    if(max===min){ h=s=0; }
+    else{
+      const d = max-min;
+      s = l>0.5 ? d/(2-max-min) : d/(max+min);
+      switch(max){
+        case r: h=(g-b)/d+(g<b?6:0); break;
+        case g: h=(b-r)/d+2; break;
+        case b: h=(r-g)/d+4; break;
+      }
+      h/=6;
+    }
+    return [Math.round(h*360), Math.round(s*100), Math.round(l*100)];
+  }
+  function update(hex){
+    if(!/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(hex)) return;
+    const [r,g,b] = hexToRgb(hex);
+    const [h,s,l] = rgbToHsl(r,g,b);
+    document.getElementById('cRgb').textContent = `rgb(${r}, ${g}, ${b})`;
+    document.getElementById('cHsl').textContent = `hsl(${h}, ${s}%, ${l}%)`;
+    document.getElementById('cSwatch').style.background = hex;
+    document.getElementById('cPick').value = hex.length===4 ? '#'+hex.slice(1).split('').map(c=>c+c).join('') : hex;
+  }
+  document.getElementById('cHex').oninput = e=>update(e.target.value);
+  document.getElementById('cPick').oninput = e=>{
+    document.getElementById('cHex').value = e.target.value;
+    update(e.target.value);
+  };
+  update('#E8A33D');
+};
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+function fmtBytes(b){
+  if(b < 1024) return b + ' B';
+  if(b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  return (b/(1024*1024)).toFixed(2) + ' MB';
+}
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+
+/* =========================================================
+   INSTALLABLE APP (PWA)
+   ========================================================= */
+let deferredInstallPrompt = null;
+const installAppBtn = document.getElementById('installAppBtn');
+
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  installAppBtn.hidden = false;
+});
+
+installAppBtn.addEventListener('click', async () => {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    installAppBtn.hidden = true;
+    return;
+  }
+
+  // iPhone/iPad: browsers do not allow a website to open the install dialog directly.
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (isIOS) {
+    alert('iPhone/iPad: open this site in Safari, tap Share, then choose “Add to Home Screen”.');
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  installAppBtn.hidden = true;
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+render();
+</script>
+</body>
+</html>

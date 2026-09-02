@@ -1,0 +1,22 @@
+{
+  "name": "ToolBox — Everyday Tools",
+  "short_name": "ToolBox",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#14171C",
+  "theme_color": "#14171C",
+  "description": "Everyday tools for images, text, generators and conversions.",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
